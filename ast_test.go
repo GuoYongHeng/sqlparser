@@ -634,3 +634,16 @@ func TestSplitStatementToPieces(t *testing.T) {
 		}
 	}
 }
+
+func TestSQLFingerprint(t *testing.T) {
+	in := "select c,d from t where a=? and b in (?+)"
+	want := "select c, d from t where a = ? and b in (?+)"
+	tree, err := Parse(in)
+	if err != nil {
+		t.Error(err)
+	}
+	got := String(tree)
+	if got != want {
+		t.Errorf("fingerprint: %s, want %s", got, want)
+	}
+}

@@ -189,3 +189,35 @@ func TestSplitStatement(t *testing.T) {
 		}
 	}
 }
+
+func TestPlaceholder(t *testing.T) {
+	in := "??+?"
+	tkn := NewStringTokenizer(in)
+
+	res := []*yySymType{}
+OuterLoop:
+	for {
+		val := &yySymType{}
+		tpe := tkn.Lex(val)
+		res = append(res, val)
+		switch tpe {
+		case VALUE_ARG:
+			t.Logf("VALUE_ARG: %s", string(val.bytes))
+		case MULTI_VALUE_ARG:
+			t.Logf("MULTI_VALUE_ARG: %s", string(val.bytes))
+		case 0:
+			break OuterLoop
+		}
+	}
+	if string(res[0].bytes) != "?" {
+		t.Errorf("got %s, want ?", string(res[0].bytes))
+	}
+
+	if string(res[1].bytes) != "?+" {
+		t.Errorf("got %s, want ?+", string(res[0].bytes))
+	}
+
+	if string(res[2].bytes) != "?" {
+		t.Errorf("got %s, want ?", string(res[0].bytes))
+	}
+}

@@ -41,7 +41,6 @@ type Tokenizer struct {
 	Position       int
 	lastToken      []byte
 	LastError      error
-	posVarIndex    int
 	ParseTree      Statement
 	partialDDL     *DDL
 	nesting        int
@@ -517,9 +516,13 @@ func (tkn *Tokenizer) Scan() (int, []byte) {
 			}
 			return int(ch), nil
 		case '?':
-			tkn.posVarIndex++
 			buf := new(bytes2.Buffer)
-			fmt.Fprintf(buf, ":v%d", tkn.posVarIndex)
+			if tkn.lastChar == '+' {
+				tkn.next()
+				fmt.Fprint(buf, "?+")
+				return MULTI_VALUE_ARG, buf.Bytes()
+			}
+			fmt.Fprint(buf, "?")
 			return VALUE_ARG, buf.Bytes()
 		case '.':
 			if isDigit(tkn.lastChar) {
@@ -920,7 +923,6 @@ func (tkn *Tokenizer) reset() {
 	tkn.ParseTree = nil
 	tkn.partialDDL = nil
 	tkn.specialComment = nil
-	tkn.posVarIndex = 0
 	tkn.nesting = 0
 	tkn.ForceEOF = false
 }
